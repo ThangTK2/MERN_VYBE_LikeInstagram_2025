@@ -48,6 +48,16 @@ const userSchema = new mongoose.Schema(
         ref: "Post",
       },
     ],
+    loops: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Post",
+      },
+    ],
+    loops: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Story",
+    },
   },
   {
     timestamps: true, // createdAt và updatedAt tự động thêm vào
