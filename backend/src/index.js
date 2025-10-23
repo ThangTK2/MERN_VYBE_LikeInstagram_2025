@@ -8,20 +8,20 @@ import userRouter from "./routes/userRouters.js";
 
 dotenv.config();
 
+const app = express();
 const PORT = process.env.PORT || 8000;
 
-const app = express();
 app.use(
   cors({
     origin: "http://localhost:5173",
-    withCredentials: true, //server chấp nhận thông tin xác thực (cookies, authorization headers,)
+    credentials: true, // Cho phép gửi cookie, token
   })
 );
 app.use(express.json()); // Giúp server hiểu dữ liệu dạng json
 app.use(cookieParser());
 
 app.use("/api/auth", authRouter);
-app.use("/api/auth", userRouter);
+app.use("/api/user", userRouter);
 
 // Kết nối DB và khởi động server
 connectDB()
