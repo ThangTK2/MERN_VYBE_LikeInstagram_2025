@@ -5,6 +5,7 @@ import { IoIosEye, IoIosEyeOff } from "react-icons/io";
 import axios from "axios";
 import { ClipLoader } from "react-spinners";
 import { serverUrl } from "../App";
+import { useNavigate } from "react-router-dom";
 
 const SignUp = () => {
   const [inputClicked, setInputClicked] = useState({
@@ -19,6 +20,7 @@ const SignUp = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleSignUp = async () => {
     setLoading(true)
@@ -28,7 +30,8 @@ const SignUp = () => {
         { name, userName, email, password },
         { withCredentials: true }
       )
-      console.log(result.data);
+      console.log(result);
+      
       setLoading(false)
     } catch (error) {
       console.error(error.response?.data || error.message);
@@ -150,12 +153,16 @@ const SignUp = () => {
 
           <button
             className="w-[70%] px-[20px] py-[10px] bg-black text-white font-semibold h-[50px] cursor-pointer rounded-2xl mt-[30px]"
-            onClick={handleSignUp} disabled={loading}
+            onClick={handleSignUp}
+            disabled={loading}
           >
-            {loading ? <ClipLoader size={30} /> : "Sign Up"}
+            {loading ? <ClipLoader color="white" size={30} /> : "Sign Up"}
           </button>
-          <p className="cursor-pointer text-gray-800">
-            Already Have an account ?{" "}
+          <p
+            className="cursor-pointer text-gray-800"
+            onClick={() => navigate("/signin")}
+          >
+           You already have an account?{" "}
             <span className="border-b-2 border-b-black pb-[3px] text-black">
               Sign In
             </span>

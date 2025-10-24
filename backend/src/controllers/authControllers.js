@@ -1,6 +1,7 @@
 import User from "../models/user.model.js";
 import genToken from "../config/token.js";
 import bcrypt from "bcryptjs";
+import sendMail from "../config/mail.js";
 
 export const signUp = async (req, res) => {
   try {
@@ -80,5 +81,59 @@ export const signOut = async (req, res) => {
     return res.status(200).json({ message: "Sign out successfully" });
   } catch (error) {
     return res.status(500).json({ message: `Sign out error: ${error}` });
+  }
+};
+
+
+// 1) Gửi OTP vào email (Step 1)
+export const forgotPassword = async (req, res) => {
+  const { email } = req.body;
+  try {
+    const user = await User.findOne({ email });
+    if (!user) return res.status(404).json({ message: "Email does not exist!" });
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    user.resetOtp = otp;
+    user.otpExpireTime = Date.now() + 5 * 60 * 1000;
+    await user.save();
+
+    await sendMail(email, otp);
+    res.json({ message: "OTP sent to email!" });
+  } catch (error) {
+    res.status(500).json({ message: "Server Error", error });
+  }
+};
+// 2) Xác minh OTP (Step 2)
+export const verifyOtp = async (req, res) => {
+  const { email, otp } = req.body;
+  try {
+    const user = await User.findOne({ email });
+    if (!user || user.resetOtp !== otp)
+      return res.status(400).json({ message: "OTP is incorrect!" });
+
+    if (user.otpExpireTime < Date.now())
+      return res.status(400).json({ message: "OTP has expired!" });
+
+    res.json({ message: "OTP chính xác!" });
+  } catch (error) {
+    res.status(500).json({ message: "Server Error" });
+  }
+};
+
+// 3) Đổi mật khẩu mới (Step 3)
+export const resetPassword = async (req, res) => {
+  const { email, newPassword } = req.body;
+  try {
+    const user = await User.findOne({ email });
+    if (!user) return res.status(404).json({ message: "Email does not exist!" });
+
+    const hashed = await bcrypt.hash(newPassword, 10);
+    user.password = hashed;
+    user.resetOtp = null;
+    user.otpExpireTime = null;
+    await user.save();
+    res.json({ message: "Password reset successful!" });
+  } catch (error) {
+    res.status(500).json({ message: "Server Error" });
   }
 };
